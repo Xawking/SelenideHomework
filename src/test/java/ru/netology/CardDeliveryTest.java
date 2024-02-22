@@ -61,6 +61,34 @@ public class CardDeliveryTest {
     }
 
     @Test
+    public void emptyPhoneField() {
+        open("http://localhost:9999");
+        String meetingDate = generateDate(3, "dd.MM.yyyy");
+        $("[data-test-id='city'] input").setValue("Москва");
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE);
+        $("[data-test-id='date'] input").setValue(meetingDate);
+        $("[data-test-id='name'] input").setValue("Римский-Корсаков Николай");
+        $("[data-test-id='agreement']").click();
+        $(".button").click();
+        $("[data-test-id='phone'] .input__sub").shouldHave(Condition.exactText("Поле обязательно для заполнения"));
+
+    }
+
+    @Test
+    public void emptyNameField() {
+        open("http://localhost:9999");
+        String meetingDate = generateDate(3, "dd.MM.yyyy");
+        $("[data-test-id='city'] input").setValue("Москва");
+        $("[data-test-id='date'] input").sendKeys(Keys.chord(Keys.SHIFT, Keys.HOME), Keys.DELETE);
+        $("[data-test-id='date'] input").setValue(meetingDate);
+        $("[data-test-id='phone'] input").setValue("+79012345678");
+        $("[data-test-id='agreement']").click();
+        $(".button").click();
+        $("[data-test-id='name'] .input__sub").shouldHave(Condition.exactText("Поле обязательно для заполнения"));
+
+    }
+
+    @Test
     public void dateTooEarly() {
         open("http://localhost:9999");
         $("[data-test-id='city'] input").setValue("Москва");
@@ -468,5 +496,25 @@ public class CardDeliveryTest {
         $("[data-test-id='notification']").shouldBe(Condition.visible, Duration.ofSeconds(15));
         $(".notification__content").shouldHave(Condition.exactText("Встреча успешно забронирована на " + meetingDate));
     }
+
+    @Test
+    public void popupDateInAWeek() {
+        open("http://localhost:9999");
+        $("[data-test-id='city'] input").setValue("Москва");
+        $("[data-test-id='date'] input").click();
+        if (!generateDate(0, "MM").equals(generateDate(7, "MM"))) {
+            $("div.calendar__arrow:nth-child(4)").click();
+            $$(".calendar__day").findBy(Condition.exactText(generateDate(7, "d"))).click();
+        } else {
+            $$(".calendar__day").findBy(Condition.exactText(generateDate(7, "dd"))).click();
+        }
+        $("[data-test-id='name'] input").setValue("Римский-Корсаков Николай");
+        $("[data-test-id='phone'] input").setValue("+79012345678");
+        $("[data-test-id='agreement']").click();
+        $(".button").click();
+        $("[data-test-id='notification']").shouldBe(Condition.visible, Duration.ofSeconds(15));
+        $(".notification__content").shouldHave(Condition.exactText("Встреча успешно забронирована на " + generateDate(7, "dd.MM.yyyy")));
+    }
+
 
 }
